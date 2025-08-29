@@ -1,7 +1,42 @@
-Overview
-========
+```mermaid
+flowchart TD
 
-Welcome to Astronomer! This project was generated after you ran 'astro dev init' using the Astronomer CLI. This readme describes the contents of the project, as well as how to run Apache Airflow on your local machine.
+    %% --- DEV Environments ---
+    subgraph DEV1 [Ambiente DEV 1]
+        U1[User] --> L1[localhost <br> dbt]
+        L1 --> D1[(Database)]
+    end
+
+    subgraph DEV2 [Ambiente DEV 2]
+        U2[User] --> L2[localhost <br> dbt]
+        L2 --> D2[(Database)]
+    end
+
+    %% --- GitHub ---
+    GH[(GitHub)]
+
+    L1 --> GH
+    L2 --> GH
+
+    %% --- PROD Environment ---
+    subgraph PROD [Ambiente PROD]
+        VM[Stateless VM <br> dbt] --> DP[(Database)]
+        DP --> C[(Cloud)]
+        DW[Execução periódica <br> DAG DW] --> VM
+    end
+
+    %% --- Airflow + Cosmos ---
+    subgraph AIRFLOW [Airflow + Cosmos]
+        LOC[localhost ou Cloud] --> DBTA[dbt Cosmos]
+        DBTA --> AF[Apache Airflow]
+    end
+
+    %% --- Connections from GitHub ---
+    GH -->|Merge na branch principal<br/>deploy em PROD| VM
+    GH -->|Merge na branch principal<br/>atualiza Airflow| DBTA
+
+
+```
 
 Project Contents
 ================
@@ -17,29 +52,3 @@ Your Astro project contains the following files and folders:
 - plugins: Add custom or community plugins for your project to this file. It is empty by default.
 - airflow_settings.yaml: Use this local-only file to specify Airflow Connections, Variables, and Pools instead of entering them in the Airflow UI as you develop DAGs in this project.
 
-Deploy Your Project Locally
-===========================
-
-Start Airflow on your local machine by running 'astro dev start'.
-
-This command will spin up five Docker containers on your machine, each for a different Airflow component:
-
-- Postgres: Airflow's Metadata Database
-- Scheduler: The Airflow component responsible for monitoring and triggering tasks
-- DAG Processor: The Airflow component responsible for parsing DAGs
-- API Server: The Airflow component responsible for serving the Airflow UI and API
-- Triggerer: The Airflow component responsible for triggering deferred tasks
-
-When all five containers are ready the command will open the browser to the Airflow UI at http://localhost:8080/. You should also be able to access your Postgres Database at 'localhost:5432/postgres' with username 'postgres' and password 'postgres'.
-
-Note: If you already have either of the above ports allocated, you can either [stop your existing Docker containers or change the port](https://www.astronomer.io/docs/astro/cli/troubleshoot-locally#ports-are-not-available-for-my-local-airflow-webserver).
-
-Deploy Your Project to Astronomer
-=================================
-
-If you have an Astronomer account, pushing code to a Deployment on Astronomer is simple. For deploying instructions, refer to Astronomer documentation: https://www.astronomer.io/docs/astro/deploy-code/
-
-Contact
-=======
-
-The Astronomer CLI is maintained with love by the Astronomer team. To report a bug or suggest a change, reach out to our support.
